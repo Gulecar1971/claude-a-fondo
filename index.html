@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#7048e8">
+<meta name="description" content="Curso práctico para aprender a usar Claude en tu negocio.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Claude a Fondo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: cuaderno de estudio de una columna; índice como fila de chips, módulos como capítulos plegables, resaltador amarillo para lo crucial */
+:root{
+  --paper:#f3f6f5; --card:#ffffff; --ink:#15302a; --muted:#566963; --line:#d5dfdb;
+  --accent:#0d6a56; --accent-soft:#e1efea; --mark:#ffe36b; --mark-ink:#15302a;
+  --ok:#1f7a4a; --bad:#b03a2e; --prompt:#eef3f1;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Source Sans 3",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#101614; --card:#17201d; --ink:#e3ece9; --muted:#9bb0a9; --line:#2a3733;
+  --accent:#5cc9a6; --accent-soft:#1c2e28; --mark:#c9a92a; --mark-ink:#101614;
+  --ok:#5cc98a; --bad:#ef8a7e; --prompt:#1c2724; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#101614; --card:#17201d; --ink:#e3ece9; --muted:#9bb0a9; --line:#2a3733;
+  --accent:#5cc9a6; --accent-soft:#1c2e28; --mark:#c9a92a; --mark-ink:#101614;
+  --ok:#5cc98a; --bad:#ef8a7e; --prompt:#1c2724; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+.wrap{max-width:760px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+mark{background:linear-gradient(transparent 12%,var(--mark) 12%,var(--mark) 88%,transparent 88%);color:var(--mark-ink);padding:0 2px;border-radius:2px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
+h1{font-size:clamp(2.3rem,8vw,3.6rem);font-weight:800;letter-spacing:-.02em;line-height:1}
+.sub{font-size:1.15rem;color:var(--muted);margin:10px 0 0;max-width:34ch}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.intro{margin:22px 0 0;max-width:65ch}
+/* progreso */
+.progress{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);padding-block:12px;margin-top:20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.bar{flex:1;height:10px;background:var(--line);border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .4s}
+.progress span{font-family:var(--mono);font-size:.85rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+/* índice */
+.toc{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 0;padding:0;list-style:none}
+.toc a{display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--ink);border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 12px;font-size:.92rem}
+.toc a b{font-family:var(--mono);font-weight:500;color:var(--accent);font-size:.8rem}
+.toc a.done{background:var(--accent-soft);border-color:var(--accent)}
+.toc a.done b::after{content:" ✓"}
+/* bloques */
+.blocks{margin-top:40px}
+.blocks h2{font-size:1.5rem}
+.blocks p{color:var(--muted);margin:6px 0 16px}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.flow div{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 14px;min-width:0}
+.flow strong{font-family:var(--display);font-size:1.05rem;display:block}
+.flow span{color:var(--muted);font-size:.95rem}
+/* módulos */
+.mods{margin-top:44px;display:grid;gap:14px}
+details.mod{background:var(--card);border:1px solid var(--line);border-radius:14px;scroll-margin-top:70px}
+details.mod[open]{border-color:var(--accent)}
+details.mod>summary{list-style:none;cursor:pointer;padding:18px 18px 16px;display:grid;grid-template-columns:auto 1fr auto;gap:4px 14px;align-items:start}
+details.mod>summary::-webkit-details-marker{display:none}
+.num{font-family:var(--display);font-weight:800;font-size:2.1rem;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums;grid-row:span 2}
+summary h3{font-size:1.28rem;line-height:1.2}
+summary .bajada{color:var(--muted);font-size:.98rem;grid-column:2}
+.chev{grid-row:span 2;font-size:1.3rem;color:var(--muted);transition:transform .2s}
+details[open] .chev{transform:rotate(90deg)}
+.status{font-family:var(--mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--ok);grid-column:2}
+.body{padding:0 18px 20px;display:grid;gap:22px}
+.sec-h{font-family:var(--mono);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;border-top:1px solid var(--line);padding-top:16px}
+.points{display:grid;gap:14px;margin:0;padding:0;list-style:none}
+.points li strong{display:block;font-weight:700}
+.points li p{margin:2px 0 0;max-width:65ch}
+.prompts{display:grid;gap:8px}
+.prompt{display:flex;gap:8px;align-items:flex-start;background:var(--prompt);border-radius:8px;padding:10px 10px 10px 12px}
+.prompt code{flex:1;min-width:0;font-family:var(--mono);font-size:.85rem;line-height:1.5;white-space:pre-wrap;word-break:break-word;color:var(--ink)}
+.copy{flex:none;font:600 .8rem var(--body);border:1px solid var(--line);background:var(--card);color:var(--accent);border-radius:6px;padding:5px 9px;cursor:pointer}
+.copy:focus-visible,.toc a:focus-visible,summary:focus-visible,.opt:focus-visible,.donebtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ex{border-left:3px solid var(--accent);padding:2px 0 2px 14px}
+.ex h4{margin:0 0 6px;font-family:var(--display);font-size:1.08rem}
+.ex ol{margin:0;padding-left:20px;display:grid;gap:4px}
+.ojo{background:var(--accent-soft);border-radius:8px;padding:12px 14px;font-size:.98rem}
+.ojo b{color:var(--accent)}
+.quiz{display:grid;gap:16px}
+.q p{margin:0 0 8px;font-weight:600}
+.opts{display:grid;gap:6px}
+.opt{text-align:left;font:inherit;font-size:.97rem;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:9px 12px;cursor:pointer}
+.opt.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,var(--card))}
+.opt.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,var(--card))}
+.fb{margin:6px 0 0;font-size:.93rem;color:var(--muted)}
+.donebtn{justify-self:start;font:700 1rem var(--body);border:0;border-radius:10px;padding:12px 18px;background:var(--accent);color:var(--paper);cursor:pointer}
+.donebtn.is-done{background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent)}
+/* chuleta */
+.cheat{margin-top:48px}
+.cheat h2{font-size:1.5rem}
+.cheat p{color:var(--muted);margin:6px 0 14px}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:.96rem}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:500}
+tr:last-child td{border-bottom:0}
+td:last-child{font-weight:600;color:var(--accent)}
+footer{margin-top:40px;color:var(--muted);font-size:.9rem}
+
+/* COLOR: cada módulo tiene su color (--mc); tres resaltadores: amarillo = clave, verde = truco, rosa = cuidado */
+:root{--hl-g:#9be7b8;--hl-p:#ffb3c7;--warn:#e8590c;--warn-soft:#fff0e6}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--hl-g:#3e9e6a;--hl-p:#c05a78;--warn:#ff9a52;--warn-soft:#3a2416}}
+:root[data-theme="dark"]{--hl-g:#3e9e6a;--hl-p:#c05a78;--warn:#ff9a52;--warn-soft:#3a2416}
+mark.g{background:linear-gradient(transparent 12%,var(--hl-g) 12%,var(--hl-g) 88%,transparent 88%)}
+mark.p{background:linear-gradient(transparent 12%,var(--hl-p) 12%,var(--hl-p) 88%,transparent 88%)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:14px;font-size:.92rem}
+.hero{background:linear-gradient(120deg,#0d6a56,#1c7ed6 35%,#7048e8 60%,#d6336c 80%,#f08c00);color:#fff;border-radius:18px;padding:26px 20px 22px}
+.hero .eyebrow{color:#fff;opacity:.9}.hero .sub{color:#fff;opacity:.92}
+.bar{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;background:none}
+.bar b{height:10px;border-radius:3px;background:color-mix(in srgb,var(--mc) 22%,var(--line));transition:background .3s}
+.bar b.on{background:var(--mc)}
+.toc a{border-color:color-mix(in srgb,var(--mc) 45%,var(--line))}
+.toc a b{color:var(--mc)}
+.toc a.done{background:var(--mc);border-color:var(--mc);color:#fff}.toc a.done b{color:#fff}
+.flow div{background:color-mix(in srgb,var(--mc) 13%,var(--card));border-color:color-mix(in srgb,var(--mc) 50%,var(--line))}
+.flow strong{color:var(--mc)}
+details.mod{border:2px solid color-mix(in srgb,var(--mc) 40%,var(--line));overflow:hidden}
+details.mod[open]{border-color:var(--mc)}
+details.mod>summary{background:color-mix(in srgb,var(--mc) 14%,var(--card))}
+.num{background:var(--mc);color:#fff;border-radius:12px;padding:8px 10px;font-size:1.6rem}
+summary h3{color:var(--ink)}
+.status{color:var(--mc)}
+.body{padding-top:18px}
+.sec-h{display:inline-block;border:0;padding:4px 10px;border-radius:999px;background:var(--mc);color:#fff;margin:0 0 10px}
+.points li{padding-left:12px;border-left:4px solid color-mix(in srgb,var(--mc) 55%,transparent)}
+.points li strong{color:var(--mc)}
+.prompt{background:color-mix(in srgb,var(--mc) 10%,var(--card));border:1px dashed color-mix(in srgb,var(--mc) 60%,var(--line))}
+.copy{background:var(--mc);color:#fff;border-color:var(--mc)}
+.ex{border:0;background:color-mix(in srgb,var(--mc) 12%,var(--card));border-radius:12px;padding:14px 16px}
+.ex h4{color:var(--mc)}
+.ex ol li::marker{color:var(--mc);font-weight:700}
+.ojo{background:var(--warn-soft);border:2px solid var(--warn)}.ojo b{color:var(--warn)}
+.opt{border-color:color-mix(in srgb,var(--mc) 35%,var(--line))}
+.donebtn{background:var(--mc);color:#fff}
+.donebtn.is-done{background:color-mix(in srgb,var(--mc) 15%,var(--card));color:var(--mc);border-color:var(--mc)}
+td:last-child span{display:inline-block;background:color-mix(in srgb,var(--mc) 16%,var(--card));color:var(--mc);border:1px solid color-mix(in srgb,var(--mc) 50%,var(--line));border-radius:999px;padding:2px 10px}
+td:first-child{border-left:4px solid var(--mc)}
+.blocks h2,.cheat h2{background:linear-gradient(90deg,#1c7ed6,#7048e8,#d6336c);-webkit-background-clip:text;background-clip:text;color:transparent}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .num,:root:not([data-theme="light"]) .sec-h,:root:not([data-theme="light"]) .copy,:root:not([data-theme="light"]) .donebtn:not(.is-done),:root:not([data-theme="light"]) .toc a.done{color:#101614}}
+:root[data-theme="dark"] .num,:root[data-theme="dark"] .sec-h,:root[data-theme="dark"] .copy,:root[data-theme="dark"] .donebtn:not(.is-done),:root[data-theme="dark"] .toc a.done{color:#101614}
+
+/* práctica con Claude */
+.practice{background:color-mix(in srgb,var(--mc,#7048e8) 9%,var(--card));border:2px solid var(--mc,#7048e8);border-radius:14px;padding:14px;display:grid;gap:10px}
+.practice h4{margin:0;font-family:var(--display);font-size:1.1rem;color:var(--mc,#7048e8)}
+.practice p.hint{margin:0;color:var(--muted);font-size:.93rem}
+.practice textarea{width:100%;min-height:96px;resize:vertical;font:inherit;font-size:.97rem;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px}
+.practice textarea:focus-visible{outline:2px solid var(--mc,#7048e8);outline-offset:1px}
+.pbtns{display:flex;flex-wrap:wrap;gap:8px}
+.pbtn{font:600 .93rem var(--body);border:1px solid var(--mc,#7048e8);background:var(--card);color:var(--mc,#7048e8);border-radius:999px;padding:8px 14px;cursor:pointer}
+.pbtn.main{background:var(--mc,#7048e8);color:#fff}
+.pbtn:disabled{opacity:.5;cursor:wait}
+.pbtn:focus-visible{outline:2px solid var(--mc,#7048e8);outline-offset:2px}
+.answer{background:var(--card);border-radius:10px;padding:12px 14px;border:1px solid var(--line);font-size:.97rem;white-space:normal}
+.answer strong{color:var(--mc,#7048e8)}
+.answer ul{margin:4px 0;padding-left:20px}
+.answer p{margin:0 0 8px}.answer p:last-child{margin:0}
+.pnote{font-size:.9rem;color:var(--muted)}
+.ask{margin-top:28px;--mc:#7048e8}
+:root[data-theme="dark"] .pbtn.main{color:#101614}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .pbtn.main{color:#101614}}
+.syncbox{--mc:#1c7ed6;margin-top:12px}
+.codebig{font-family:var(--mono);font-size:1.3rem;font-weight:500;letter-spacing:.08em;background:var(--card);border:1px dashed var(--mc);border-radius:8px;padding:6px 12px}
+.codein{font:inherit;font-family:var(--mono);text-transform:uppercase;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:10em;max-width:100%}
+#syncopen{padding:5px 12px;font-size:.85rem;--mc:#1c7ed6}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow">Curso práctico · 10 módulos</div>
+    <h1 id="t"></h1>
+    <p class="sub" id="st"></p>
+    </header>
+  <p class="intro" id="intro"></p>
+  <div class="legend"><span><mark>Amarillo</mark> lo clave</span><span><mark class="g">Verde</mark> truco práctico</span><span><mark class="p">Rosa</mark> cuidado</span></div>
+  <div class="progress" aria-live="polite"><div class="bar" id="bar"></div><span id="ptxt">0 de 10</span><button class="pbtn" id="syncopen" type="button">Pasar avance</button></div>
+  <div class="practice syncbox" id="syncbox" hidden>
+    <h4>Pasar tu avance a otro equipo</h4>
+    <p class="hint">Cada equipo guarda su avance. Copiá este código y cargalo en el otro (celu, compu o notebook).</p>
+    <div class="pbtns" style="align-items:center"><code id="mycode" class="codebig">CAF-00</code><button class="pbtn main" id="copycode" type="button">Copiar código</button></div>
+    <label class="hint" for="incode">¿Venís de otro equipo? Pegá el código acá:</label>
+    <div class="pbtns"><input id="incode" class="codein" placeholder="CAF-..." autocomplete="off"><button class="pbtn" id="loadcode" type="button">Cargar avance</button></div>
+    <p class="hint" id="codemsg" aria-live="polite"></p>
+  </div>
+  <nav><ul class="toc" id="toc"></ul></nav>
+  <div class="practice ask" data-pr="general">
+    <h4>Preguntale a Claude sobre el curso</h4>
+    <p class="hint">Cualquier duda de cualquier módulo. Se abre Claude con tu pregunta lista.</p>
+    <textarea id="pr-general" placeholder="Ej: ¿cuál es la diferencia entre un proyecto y la memoria?"></textarea>
+    <div class="pbtns"><button class="pbtn main" type="button" data-act="ask" data-mod="-1">Preguntar</button></div>
+    <div class="answer" hidden></div>
+    <p class="pnote" hidden></p>
+  </div>
+  <section class="blocks">
+    <div class="eyebrow">El mapa</div>
+    <h2>Seis piezas que se combinan</h2>
+    <p>Todo el curso gira alrededor de estas piezas. Cada una resuelve una cosa distinta.</p>
+    <div class="flow" id="flow"></div>
+  </section>
+  <section class="mods" id="mods"></section>
+  <section class="cheat">
+    <div class="eyebrow">Para consultar rápido</div>
+    <h2>¿Qué uso para qué?</h2>
+    <p>La chuleta para cuando no te acordás qué herramienta corresponde.</p>
+    <div class="tbl"><table><thead><tr><th>Quiero…</th><th>Uso…</th></tr></thead><tbody id="cheat"></tbody></table></div>
+  </section>
+  <footer>Versión app. Las funciones de Claude cambian seguido y algunas dependen del plan y del dispositivo. Si algo no aparece como dice acá, pedile a Claude: “¿cómo hago esto hoy en mi cuenta?”.</footer>
+</div>
+
+<script>
+const C = {"titulo": "Claude a Fondo", "subtitulo": "Curso práctico para emprendedores: del chat a las apps propias", "intro": "Este curso está pensado para usar Claude en el negocio de todos los días, no para aprender teoría. Cada módulo tiene lo que necesitás saber, pedidos listos para copiar, un ejercicio con tu propio negocio y dos preguntas para chequear que quedó claro. Hacelo en orden la primera vez; después usalo como consulta. Tildá cada módulo cuando lo termines y la barra de arriba marca tu avance. Un aviso: algunas funciones dependen de tu plan, de tu cuenta y de si usás la app del celu, la web o la de escritorio. Si algo no te aparece, no es que lo estés haciendo mal.", "bloques": [{"n": "Conectores", "d": "traen tus datos: mail, calendario, Drive"}, {"n": "Proyectos", "d": "ordenan cada negocio en su carpeta"}, {"n": "Memoria", "d": "recuerda quién sos y cómo trabajás"}, {"n": "Skills", "d": "guardan el método para hacer algo siempre igual"}, {"n": "Tareas programadas", "d": "hacen correr el trabajo solo, a hora fija"}, {"n": "Artefactos y archivos", "d": "son lo que te llevás: páginas, planillas, PDFs, apps"}], "modulos": [{"id": "fundamentos", "titulo": "Fundamentos: cómo pedir bien", "bajada": "La diferencia entre una respuesta genérica y una que te sirve está en cómo pedís.", "puntos": [{"t": "La fórmula del buen pedido", "d": "Un pedido que funciona tiene cuatro partes: ==quién sos y para qué es==, qué querés lograr, en qué formato lo querés y un ejemplo si lo tenés. Ejemplo flojo: \"haceme un post\". Ejemplo bueno: \"Tengo una marca de aromas llamada Demum. Necesito 3 textos cortos para Instagram presentando un difusor de vainilla, tono cálido y cercano, sin emojis de más, con una llamada a escribir por WhatsApp\"."}, {"t": "Conversá, no pidas todo de una", "d": "La primera respuesta es un borrador. ==Corregí sobre la marcha==: \"más corto\", \"más canchero\", \"sacá la segunda parte\", \"esto no, porque mis clientes son del barrio\". Claude ajusta sin empezar de cero."}, {"t": "Pedile que te pregunte", "d": "Cuando no sabés bien qué necesitás, decí: ++\"Antes de responder, haceme las preguntas que necesites para hacerlo bien\"++. Es la forma más rápida de llegar a algo a medida."}, {"t": "Los modelos", "d": "Arriba del chat elegís el modelo. ==Opus== es el más capaz, para cosas complejas (planes de negocio, apps, análisis largos). ==Sonnet== es muy bueno y rápido para el día a día. ==Haiku== es el más veloz, para cosas simples. Si dudás, usá el que viene por defecto."}, {"t": "Hablale en vez de escribir", "d": "En la app del celular tenés ++modo de voz++: le hablás y te contesta hablando. Sirve para pensar en voz alta mientras manejás o reponés el kiosco."}, {"t": "Preferencias generales", "d": "En Configuración, en tu perfil, podés dejar escrito ==cómo querés que te hable siempre== (por ejemplo: \"en español argentino, directo, con ejemplos concretos\"). Aplica a los chats nuevos."}], "pedidos": ["Soy dueño de un kiosco almacén en el conurbano. Quiero [objetivo]. Dámelo en [formato]. Antes de arrancar, haceme las preguntas que necesites.", "Revisá esta respuesta tuya como si fueras un crítico exigente: ¿qué le falta, qué sobra y qué está mal? Después mejorala.", "Explicámelo como si se lo contaras a alguien que atiende un negocio y no tiene tiempo: corto, con un ejemplo."], "ejercicio": {"t": "El mismo pedido, dos veces", "pasos": ["Pedí \"ideas de promociones\" así nomás y guardá la respuesta.", "Ahora pedilo con la fórmula: quién sos, qué vendés, a quién, qué querés lograr, en qué formato.", "Compará las dos respuestas. La diferencia es lo que te ahorra este módulo."]}, "ojo": "Claude puede equivocarse, sobre todo con datos actuales, precios o leyes. Para eso existe la búsqueda web (módulo 5). Lo importante, chequealo.", "quiz": [{"q": "¿Cuál de estos pedidos va a dar mejor resultado?", "o": ["Haceme un cartel de ofertas", "Cartel de ofertas para kiosco de barrio: 3 productos con precio, letra grande, que se lea desde la vereda", "Cartel lindo"], "a": 1, "x": "Tiene contexto, contenido concreto y un criterio de éxito (que se lea desde la vereda)."}, {"q": "La primera respuesta no te convence. ¿Qué conviene hacer?", "o": ["Abrir un chat nuevo y escribir lo mismo", "Decirle en el mismo chat qué cambiar", "Dejar de usar Claude para eso"], "a": 1, "x": "En el mismo chat Claude ya tiene el contexto; corregir es más rápido que empezar de nuevo."}]}, {"id": "proyectos", "titulo": "Proyectos y memoria", "bajada": "Para no explicar lo mismo cada vez que abrís un chat.", "puntos": [{"t": "Qué es un proyecto", "d": "Es ==una carpeta de trabajo== con instrucciones fijas y archivos de consulta. Todo chat que abras adentro ya sabe de qué se trata. Ideal: un proyecto \"Kiosco\", otro \"Demum Aromas\", otro \"Multi-D\"."}, {"t": "Instrucciones del proyecto", "d": "Es un texto que Claude lee siempre en ese proyecto. Ejemplo para Demum: quién es la marca, el tono, los productos, a quién le vendés, qué palabras no usar. ==Cuanto más concreto, mejor==."}, {"t": "Archivos del proyecto", "d": "Subís lo que querés que tenga a mano: lista de precios, catálogo, logo, plan de negocio, apuntes de Multi-D. Claude los consulta cuando hace falta."}, {"t": "Qué es la memoria", "d": "Es lo que Claude ==recuerda de vos entre chats==: tu nombre, tus negocios, cómo te gusta que te respondan. Se va armando sola con lo que charlás. Si querés algo seguro, decílo: ++\"recordá que...\"++."}, {"t": "Cómo controlarla", "d": "Podés decir ++\"olvidate de...\"++ o \"no me saques más el tema de...\". Para apagarla del todo hay un ajuste en Configuración. Y si querés charlar algo sin que quede guardado, usá un ==chat incógnito==."}, {"t": "Buscar en chats viejos", "d": "Podés preguntar \"¿qué habíamos decidido sobre el logo de Demum?\" y ==Claude busca en tus conversaciones anteriores==, si tenés esa opción activada."}, {"t": "Memoria del proyecto", "d": "Cada proyecto tiene un ajuste propio para que su memoria se comparta con el resto de tus chats o quede separada. Útil si un proyecto es de un cliente y no querés mezclar."}], "pedidos": ["Ayudame a escribir las instrucciones para un proyecto de Claude sobre mi marca [nombre]. Preguntame lo que necesites: productos, público, tono, precios, competencia.", "Recordá que en el kiosco trabajo con margen sobre costo y que mis clientes son del barrio.", "¿Qué sabés de mí y de mis negocios? Decímelo en una lista corta."], "ejercicio": {"t": "Armá el proyecto Demum Aromas", "pasos": ["Creá un proyecto nuevo llamado \"Demum Aromas\".", "Pedile a Claude que te ayude a escribir las instrucciones (usá el primer pedido de arriba) y pegalas en el proyecto.", "Subí lo que tengas: logo, lista de productos, precios, ideas de packaging.", "Abrí un chat adentro y pedí \"3 nombres para un aroma de invierno\". Fijate que ya sabe de qué marca le hablás."]}, "ojo": "Lo que va en un proyecto es del proyecto; lo que va en memoria te sigue a todos lados. Datos de un negocio concreto, mejor en su proyecto.", "quiz": [{"q": "Querés que Claude conozca tu catálogo cada vez que hablás de Demum. ¿Dónde lo ponés?", "o": ["En la memoria", "En los archivos del proyecto Demum", "Lo pegás en cada chat"], "a": 1, "x": "El proyecto guarda archivos de consulta para todos sus chats."}, {"q": "Querés consultar algo sin que quede en la memoria. ¿Qué usás?", "o": ["Un chat incógnito", "Un proyecto nuevo", "El modo de voz"], "a": 0, "x": "El chat incógnito no usa ni guarda memoria."}]}, {"id": "archivos", "titulo": "Archivos: leer, resumir y crear", "bajada": "PDFs, Excel, Word, fotos: Claude los lee y también los fabrica.", "puntos": [{"t": "Qué podés subir", "d": "PDF, Word, Excel, CSV, PowerPoint, fotos y capturas. Con el clip o arrastrándolos. ==Una foto de una factura o de una lista de precios también sirve==: Claude lee el texto."}, {"t": "Qué podés pedirle con un archivo", "d": "Resumirlo, explicarlo, sacar una tabla, compararlo con otro, traducirlo, encontrar errores, pasar los datos a una planilla, convertir de un formato a otro."}, {"t": "Qué archivos crea", "d": "Planillas de Excel ==con fórmulas que funcionan==, documentos de Word, presentaciones de PowerPoint, PDFs. ++Pedí el formato por nombre++ (\"en Excel\", \"en PDF\") si lo necesitás así."}, {"t": "Análisis de datos", "d": "Si le das una planilla de ventas, Claude ==corre cálculos de verdad== (no estima a ojo): promedios, qué producto deja más margen, qué se vende más los fines de semana, y te lo grafica."}, {"t": "Libros y documentos largos", "d": "Le podés subir un libro entero en PDF y pedirle un resumen explicado, un cuadro sinóptico y las ideas aplicables a tu negocio. Si es un escaneo, ++igual lo lee++."}, {"t": "Tu compu conectada", "d": "Con la app de escritorio, Claude puede trabajar sobre carpetas de tu computadora que vos le habilites: leer, ordenar y guardar archivos ahí."}], "pedidos": ["Te paso la foto de la factura del proveedor. Armame una planilla de Excel con producto, costo, precio de venta con 35% de margen y redondeo a la decena.", "Resumime este PDF en 10 puntos explicados, con lo más importante resaltado, y al final decime qué puedo aplicar en mi negocio.", "Compará estas dos listas de precios y decime qué productos subieron y cuánto."], "ejercicio": {"t": "De la factura a la góndola", "pasos": ["Sacale una foto a una factura o lista de un proveedor.", "Usá el primer pedido de arriba, con tu margen real.", "Abrí el Excel, cambiá un costo y fijate que el precio de venta se recalcula solo."]}, "ojo": "Revisá siempre los números que Claude leyó de una foto antes de usarlos: una letra borrosa puede cambiar un precio.", "quiz": [{"q": "Necesitás una planilla donde, si cambiás el costo, cambie el precio. ¿Qué pedís?", "o": ["Una lista de precios en el chat", "Una planilla con fórmulas", "Un resumen en PDF"], "a": 1, "x": "Con fórmulas, la planilla se recalcula sola."}, {"q": "¿Claude puede leer una foto de una lista de precios escrita en papel?", "o": ["Sí", "No, solo PDFs", "Solo si es Excel"], "a": 0, "x": "Lee el texto de las fotos. Igual conviene revisar lo que leyó."}]}, {"id": "artefactos", "titulo": "Artefactos: páginas, herramientas y documentos vivos", "bajada": "Lo que Claude te arma para guardar, editar y compartir con un link.", "puntos": [{"t": "Qué es un artefacto", "d": "Es ==una página web tuya, privada==, que Claude publica con su propio link: un documento, una calculadora, un catálogo, un tablero, un mini juego. Queda guardada en tu galería y se abre desde cualquier dispositivo."}, {"t": "Tipos listos para usar", "d": "Según tu cuenta, hay tipos con editor propio: ==Docs== (documentos), ==Slides== (presentaciones), ==Sheets== (planillas), ==Design== (flyers, pantallas de apps, carteles), ==Dashboard== (tableros de números), ==Whiteboard== (pizarra de ideas y diagramas) y ==Tasks== (listas de tareas). ++Vos podés editar directo++, sin pedirle todo a Claude."}, {"t": "Exportar", "d": "Desde el artefacto bajás el documento a Word o PDF, la presentación a PowerPoint o PDF, el diseño a imagen o PDF. ==No hace falta pedir el archivo de entrada==."}, {"t": "Compartir", "d": "!!Arranca privado!!. Cuando querés, compartís el link: con tu pareja, con tu grupo de Multi-D, con un cliente. Lo podés fijar en la barra lateral si lo usás seguido."}, {"t": "Artefactos que guardan datos", "d": "Una página puede recordar lo que la gente carga: una planilla de pedidos, un formulario de reservas, una lista que comparten dos personas. Pedíselo: ++\"que guarde lo que cargo\"++."}, {"t": "Cambios", "d": "Para modificar, decí qué cambiar: \"agregá una columna de stock\", \"poné el logo arriba\". Se actualiza en el mismo link."}], "pedidos": ["Haceme una calculadora de precios para el kiosco: cargo costo y margen, me da precio final redondeado. Que se use fácil desde el celu.", "Armame un catálogo de Demum Aromas como página para compartir por WhatsApp: foto, nombre, descripción corta y precio de cada aroma.", "Haceme una presentación de 8 diapositivas con mi idea de negocio para presentar en Multi-D."], "ejercicio": {"t": "Tu primera herramienta propia", "pasos": ["Pedí la calculadora de precios (primer pedido).", "Probala desde el celu con un producto real.", "Pedí un cambio: \"agregá un botón para copiar el precio\".", "Fijala en la barra lateral para tenerla a mano."]}, "ojo": "Un link compartido lo puede reenviar cualquiera que lo tenga. No pongas en una página compartida datos que no mostrarías.", "quiz": [{"q": "Querés una presentación para mandar por mail como PowerPoint. ¿Qué hacés?", "o": ["La pedís en Slides y la exportás a PowerPoint", "No se puede", "Pedís un PDF y lo convertís en otra página"], "a": 0, "x": "Las presentaciones de Slides se exportan a PowerPoint o PDF."}, {"q": "¿Quién ve un artefacto apenas se crea?", "o": ["Todo el mundo", "Solo vos, hasta que lo compartas", "Tus contactos de WhatsApp"], "a": 1, "x": "Arranca privado."}]}, {"id": "busqueda", "titulo": "Búsqueda e investigación", "bajada": "Para lo que cambia: precios, leyes, proveedores, novedades.", "puntos": [{"t": "Búsqueda web", "d": "Claude busca en internet cuando el tema es actual y te ==muestra las fuentes== al final. Si no busca solo, pedíselo: \"buscá en la web\"."}, {"t": "Investigación a fondo", "d": "Para temas grandes (un mercado, la competencia, cómo registrar una marca) existe el ==modo Investigación==: Claude revisa muchas fuentes durante varios minutos y te entrega un informe."}, {"t": "Cómo pedir una buena investigación", "d": "Decí ==qué decisión querés tomar== con la información. No es lo mismo \"investigá los aromatizantes\" que \"quiero saber si me conviene vender difusores por mayor a otros kioscos de zona sur\"."}, {"t": "Chequeá las fuentes", "d": "!!Abrí los links de lo importante!!. Las fuentes oficiales (organismos, sitios de la marca) valen más que un foro o una nota patrocinada."}, {"t": "Mapas y lugares", "d": "Podés pedir lugares cerca (mayoristas, imprentas, proveedores) y te los muestra en un ++mapa++ con datos y horarios."}], "pedidos": ["Buscá en la web cuáles son los pasos actuales para registrar una marca en Argentina y cuánto tarda. Citá fuentes oficiales.", "Investigá proveedores de esencias y envases para aromas en zona sur del Gran Buenos Aires. Armame una tabla para comparar.", "Quiero decidir si vender por mayor a otros comercios. Investigá qué tengo que tener en cuenta y qué riesgos hay."], "ejercicio": {"t": "Una decisión real", "pasos": ["Elegí una decisión que tengas pendiente en Demum o el kiosco.", "Pedí una búsqueda explicando la decisión, no solo el tema.", "Abrí dos fuentes y fijate si dicen lo mismo que el resumen."]}, "ojo": "Para temas legales, impositivos o de plata, usalo para entender y preparar preguntas; la decisión final, con un contador o abogado.", "quiz": [{"q": "¿Qué pedido da mejor investigación?", "o": ["Investigá velas", "Quiero saber si me conviene sumar velas aromáticas a Demum con poco capital: costos, proveedores y competencia en zona sur", "Velas sí o no"], "a": 1, "x": "Dice qué decisión querés tomar y con qué límites."}, {"q": "¿Qué hacés con lo más importante de un informe?", "o": ["Lo das por cierto", "Abrís las fuentes y lo chequeás", "Le preguntás a Claude si está seguro"], "a": 1, "x": "Las fuentes son para eso."}]}, {"id": "conectores", "titulo": "Conectores: Claude con tus apps", "bajada": "Para que trabaje con tu mail, tu calendario y tus archivos sin copiar y pegar.", "puntos": [{"t": "Qué son", "d": "Son ==conexiones a tus aplicaciones==: Gmail, Google Calendar, Google Drive, Notion y muchas más. Se agregan desde la sección Personalizar (Customize) de Claude, ++una sola vez++, y quedan en tu cuenta para web, escritorio y celu."}, {"t": "Qué podés hacer", "d": "\"¿Qué tengo esta semana?\", \"buscá el mail del proveedor de envases y resumime lo que ofrecía\", \"armá un documento en mi Drive con...\". Claude lee y, si le das permiso, escribe."}, {"t": "En el celular", "d": "La app puede usar el calendario, alarmas, temporizadores y tu ubicación del teléfono, si se lo permitís. \"Poneme una alarma a las 7\" o \"agendá la reunión de Multi-D el jueves a las 19\"."}, {"t": "Permisos", "d": "Antes de mandar un mail, publicar algo o borrar, ==Claude te pide confirmación==. Lo que conectás lo podés desconectar cuando quieras."}, {"t": "Si no ves el conector", "d": "Cuando pedís algo de una app que no está conectada, ++Claude te sugiere el conector++ para agregarlo con un toque."}], "pedidos": ["Mirá mi calendario de esta semana y decime qué días tengo libres a la tarde.", "Buscá en mi Gmail los mails de proveedores del último mes y armame una tabla: quién, qué ofrece, precio, si respondí.", "Agendame todos los lunes a las 9 \"pedido a distribuidora\" con aviso 30 minutos antes."], "ejercicio": {"t": "Conectá tu calendario", "pasos": ["Conectá Google Calendar (o dejá que la app del celu use tu calendario).", "Pedí \"¿qué tengo esta semana?\".", "Pedí que te agende algo recurrente del negocio."]}, "ojo": "Conectá solo lo que vas a usar. Cada conexión le da acceso a esa información.", "quiz": [{"q": "¿Claude manda un mail en tu nombre sin preguntarte?", "o": ["Sí", "No, te pide confirmación", "Solo los lunes"], "a": 1, "x": "Mandar, publicar o borrar siempre se confirma."}, {"q": "¿Dónde se agregan los conectores?", "o": ["En Personalizar (Customize)", "En el chat incógnito", "No se agregan, vienen todos"], "a": 0, "x": "Desde Personalizar, y quedan en tu cuenta."}]}, {"id": "navegador", "titulo": "Navegador y uso de la computadora", "bajada": "Claude puede hacer clics por vos en páginas web y programas.", "puntos": [{"t": "Claude en Chrome", "d": "Es una ==extensión de Chrome== que deja a Claude navegar en tu propio navegador, !!con tus sesiones abiertas!!: completar formularios, comparar precios en varias webs, buscar datos en un sitio que no tiene conector."}, {"t": "El navegador integrado", "d": "La app de escritorio trae su propio navegador, separado de tu Chrome. Sirve para que Claude trabaje en páginas sin tocar tus pestañas."}, {"t": "Uso de la computadora", "d": "Con la app de escritorio, Claude puede ver tu pantalla y manejar programas: hacer clics, escribir, moverse entre apps. Útil para tareas repetitivas en programas sin conexión directa."}, {"t": "Reglas de seguridad", "d": "==No escribe contraseñas ni datos de tarjetas==, no transfiere plata y no compra sin que confirmes el producto y el total. Si una página tiene instrucciones raras, te avisa antes de hacerles caso."}, {"t": "Cuándo conviene", "d": "Cuando no hay conector y la tarea es de varios pasos en una web. ++Si hay conector, es más rápido y seguro usar el conector++."}], "pedidos": ["Entrá a la web de [mayorista] y armame una tabla con el precio de estos 10 productos.", "Completá el formulario de inscripción de [página] con mis datos de comercio; antes de enviarlo mostrame cómo quedó."], "ejercicio": {"t": "Comparar sin abrir diez pestañas", "pasos": ["Elegí 5 productos que comprás seguido.", "Pedile que busque el precio en dos webs de mayoristas.", "Pedí la tabla final con la diferencia y dónde conviene cada uno."]}, "ojo": "Pagos, contraseñas y claves los cargás vos. Es a propósito.", "quiz": [{"q": "¿Claude puede cargar la clave de tu banco por vos?", "o": ["Sí", "No, eso lo hacés vos", "Solo con Chrome"], "a": 1, "x": "Contraseñas y datos financieros quedan siempre de tu lado."}, {"q": "Hay un conector para lo que querés hacer. ¿Qué usás?", "o": ["El navegador", "El conector", "La cámara"], "a": 1, "x": "El conector es más rápido y más seguro."}]}, {"id": "automatizar", "titulo": "Skills, tareas programadas y plugins", "bajada": "Que Claude haga las cosas siempre igual, y algunas solo.", "puntos": [{"t": "Skills: recetas guardadas", "d": "Una skill es ==un método escrito== para que Claude haga una tarea siempre de la misma forma. Ejemplo: tu forma de resumir libros (resumen explicado, cuadro sinóptico, todo en un PDF). La armás una vez y después alcanza con decir \"resumime este libro\"."}, {"t": "Cómo crear una skill", "d": "Hacé la tarea una vez con Claude hasta que quede como te gusta y después decí: ++\"convertí esto en una skill\"++. Claude te muestra una tarjeta para guardarla. También podés invocarla con barra: /nombre."}, {"t": "Tareas programadas", "d": "Claude ==trabaja solo a la hora que le digas==: \"todos los lunes a las 8, revisá mis mails de proveedores y mandame un resumen\". Cada vez arranca una sesión nueva y ++te avisa cuando termina++."}, {"t": "Recordatorios a este chat", "d": "También le podés pedir que vuelva a un chat en un rato: ++\"en 2 horas recordame revisar el pedido\"++."}, {"t": "Plugins", "d": "Un plugin es ==un paquete== de skills y conectores armado para un rubro o tarea, que se instala de una. Ideal para arrancar sin armar todo vos."}, {"t": "La idea completa", "d": "Los conectores traen los datos, el proyecto ordena, la skill tiene el método y la tarea programada lo corre sola. Así se arma un ==empleado digital== para tareas repetidas."}], "pedidos": ["Convertí lo que acabamos de hacer en una skill para repetirlo siempre igual.", "Programá una tarea: todos los lunes a las 8, revisá mi calendario de la semana y mandame un resumen con lo más importante.", "Armame una skill para escribir posts de Demum Aromas: tono, largo, estructura y cierre con WhatsApp."], "ejercicio": {"t": "Tu primer empleado digital", "pasos": ["Hacé con Claude un post para Demum hasta que te guste.", "Pedí \"convertilo en una skill\" y guardala.", "Programá una tarea semanal que te proponga 3 posts usando esa skill."]}, "ojo": "Una tarea programada que necesita tu computadora solo corre si la compu está prendida y con la app abierta. Las que corren en la nube no la necesitan.", "quiz": [{"q": "Querés que tu forma de resumir libros sea siempre igual. ¿Qué armás?", "o": ["Una skill", "Un conector", "Un chat incógnito"], "a": 0, "x": "La skill guarda el método."}, {"q": "Querés un resumen de tu semana cada lunes sin pedirlo. ¿Qué usás?", "o": ["Una tarea programada", "Un artefacto", "La memoria"], "a": 0, "x": "Las tareas programadas corren solas en el horario que elegís."}]}, {"id": "code", "titulo": "Claude Code: tus propias apps", "bajada": "Cómo pasar de una idea a una app que funciona, sin ser programador.", "puntos": [{"t": "Qué es", "d": "Claude Code es ==Claude trabajando como programador==: escribe el código, lo prueba, lo corrige y lo guarda. Lo usás desde la web, la app de escritorio, el celular o la terminal de la compu."}, {"t": "Dónde vive tu código", "d": "Lo normal es guardarlo en ==GitHub==, un sitio que guarda tu proyecto con todo su historial. Claude Code se conecta a tu repositorio, trabaja ahí y sube los cambios."}, {"t": "El flujo que funciona", "d": "1) Describís qué querés y para quién. 2) ==Pedís un plan antes de programar==. 3) Lo hace por partes. 4) Probás vos. 5) Le contás qué falló con palabras simples o con una captura. Repetir 4 y 5."}, {"t": "El archivo CLAUDE.md", "d": "Es una nota dentro del proyecto con ==las reglas de tu app==: qué hace, cómo está armada, qué no tocar. Claude la lee cada vez. Pedile: \"armá un CLAUDE.md para este proyecto\"."}, {"t": "Permisos", "d": "Claude Code te pide permiso para acciones delicadas, como borrar archivos o subir cambios. !!Leé qué te pide antes de aceptar!!."}, {"t": "Apps de Android", "d": "Puede armar una app de Android y dejar listo el ++instalador (APK)++ para que lo instales en tu teléfono. Para publicarla en Play Store hace falta una cuenta de desarrollador."}, {"t": "Errores", "d": "Los errores son normales. ==Copiá el mensaje de error tal cual== o mandá una captura, y decí qué estabas haciendo cuando pasó."}], "pedidos": ["Quiero una app para [qué] que use [quién]. Antes de programar, haceme preguntas y proponé un plan simple por etapas.", "Esto falló: [pegá el error o mandá captura]. Estaba haciendo [qué]. Arreglalo y explicame en una línea qué pasaba.", "Armá un CLAUDE.md que explique esta app para que cualquier sesión futura sepa cómo trabajar en ella."], "ejercicio": {"t": "Una mejora a tu sistema", "pasos": ["Elegí una app que ya tengas (por ejemplo, el sistema de stock del kiosco) o una idea chica.", "Pedí una sola mejora concreta, con el flujo de cinco pasos.", "Probala en el teléfono o la compu y anotá qué ajustar."]}, "ojo": "Pedí de a una cosa. Diez cambios juntos es la forma más rápida de romper algo que andaba.", "quiz": [{"q": "¿Qué conviene pedir antes de que Claude empiece a programar?", "o": ["Que lo haga todo de una", "Un plan por etapas", "Nada"], "a": 1, "x": "El plan evita construir algo que no era lo que querías."}, {"q": "Aparece un error. ¿Qué le mandás?", "o": ["\"No anda\"", "El mensaje de error o una captura, y qué estabas haciendo", "Nada, empezás de cero"], "a": 1, "x": "Con el error exacto lo encuentra mucho más rápido."}]}, {"id": "negocio", "titulo": "Casos reales: kiosco, Demum y Multi-D", "bajada": "Todo lo anterior junto, aplicado a lo que hacés todos los días.", "puntos": [{"t": "Kiosco: precios y márgenes", "d": "Planilla de costos con fórmulas (módulo 3) + calculadora en el celu (módulo 4) + revisión semanal de facturas (módulo 8). ==Así los aumentos no te comen el margen==."}, {"t": "Kiosco: promociones", "d": "Pedí combos según lo que más rota y lo que está por vencer, con el cartel listo para imprimir en Design."}, {"t": "Kiosco: WhatsApp Business", "d": "Respuestas rápidas para consultas frecuentes, mensajes de catálogo, avisos de horarios y promos. ++Pedí varias versiones y elegí la que suena a vos++."}, {"t": "Demum: marca y contenido", "d": "Proyecto Demum (módulo 2) + skill de posts (módulo 8) + catálogo compartible (módulo 4). Fichas de producto con descripción de aromas, notas y usos."}, {"t": "Demum: lanzamiento", "d": "Plan de lanzamiento por semanas en Tasks, investigación de proveedores y competencia (módulo 5), flyer en Design."}, {"t": "Multi-D: plan y pitch", "d": "Usá Claude como ==sparring==: que te haga las preguntas difíciles de un inversor, que critique tu plan, que arme la presentación en Slides."}, {"t": "Tu propósito", "d": "Claude no decide por vos, pero ayuda a ordenar: qué te da energía, qué te cansa, qué negocio usa lo que ya sabés hacer. ==Pedile ejercicios de reflexión, no respuestas==."}], "pedidos": ["Con estos productos que más vendo y estos que están por vencer, proponeme 5 combos con precio y armame el cartel.", "Escribime 8 respuestas rápidas para WhatsApp Business del kiosco: horarios, delivery, medios de pago, precios, pedidos. Tono de barrio, amable y corto.", "Hacé de inversor exigente: preguntame las 10 cosas más difíciles sobre mi plan de negocio, de a una, y al final decime dónde está flojo.", "Ayudame a pensar mi próximo emprendimiento: haceme preguntas sobre lo que me gusta, lo que sé hacer y lo que me cansa, y al final proponeme 3 caminos con pros y contras."], "ejercicio": {"t": "Tu sistema semanal", "pasos": ["Lunes: tarea programada con resumen de semana y proveedores.", "Martes: actualizar precios con la planilla y la calculadora.", "Jueves: 3 posts de Demum con la skill.", "Domingo: 15 minutos con Claude para revisar avances y decidir la próxima semana."]}, "ojo": "La herramienta suma cuando reemplaza algo que hoy hacés a mano. Empezá por lo que más tiempo te come.", "quiz": [{"q": "¿Por dónde conviene empezar a automatizar?", "o": ["Por lo más vistoso", "Por lo que más tiempo te come cada semana", "Por todo a la vez"], "a": 1, "x": "Ahí está el ahorro real."}, {"q": "Para preparar el pitch de Multi-D, ¿cómo te sirve más Claude?", "o": ["Que te diga que está todo bien", "Que haga de inversor exigente y te marque lo flojo", "Que lo presente por vos"], "a": 1, "x": "Las preguntas difíciles en privado te preparan para las de verdad."}]}], "chuleta": [["Escribir un post, mensaje o mail", "Chat normal (o una skill si lo hacés seguido)"], ["Que Claude sepa todo de un negocio", "Proyecto con instrucciones y archivos"], ["Que recuerde algo de vos", "Decir \"recordá que...\""], ["Resumir un PDF o un libro", "Subir el archivo al chat"], ["Planilla que calcule sola", "Pedir planilla con fórmulas (Sheets o Excel)"], ["Documento para editar y exportar", "Docs"], ["Presentación", "Slides"], ["Flyer, cartel o pantalla de app", "Design"], ["Herramienta o calculadora propia", "Artefacto"], ["Datos actuales: precios, leyes", "Búsqueda web"], ["Informe grande para decidir", "Modo Investigación"], ["Mail, calendario, Drive", "Conectores"], ["Hacer clics en una web", "Claude en Chrome o navegador integrado"], ["Repetir una tarea siempre igual", "Skill"], ["Que algo se haga solo cada semana", "Tarea programada"], ["Una app propia", "Claude Code"]]};
+const $ = s => document.querySelector(s);
+const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt = s => esc(s).replace(/==(.+?)==/g, "<mark>$1</mark>").replace(/\+\+(.+?)\+\+/g, '<mark class="g">$1</mark>').replace(/!!(.+?)!!/g, '<mark class="p">$1</mark>');
+const MC = ["#1c7ed6","#7048e8","#0c8599","#d6336c","#e8590c","#2f9e44","#c2255c","#f08c00","#5f3dc4","#0d6a56"];
+const MCD = ["#74c0fc","#b197fc","#66d9e8","#faa2c1","#ffa94d","#8ce99a","#f783ac","#ffd43b","#9775fa","#5cc9a6"];
+const dark = () => { const r=document.documentElement.dataset.theme; return r ? r==="dark" : matchMedia("(prefers-color-scheme: dark)").matches; };
+const mc = i => (dark()?MCD:MC)[i % 10];
+let done = {};
+try { done = JSON.parse(localStorage.getItem("cf-done") || "{}") || {}; } catch(e) {}
+const save = () => { try { localStorage.setItem("cf-done", JSON.stringify(done)); } catch(e) {} };
+
+$("#t").textContent = C.titulo; $("#st").textContent = C.subtitulo; $("#intro").textContent = C.intro;
+$("#flow").innerHTML = C.bloques.map((b,i) => `<div style="--mc:${mc([0,1,3,7,5,4][i])}"><strong>${esc(b.n)}</strong><span>${esc(b.d)}</span></div>`).join("");
+$("#cheat").innerHTML = C.chuleta.map((r,i) => `<tr style="--mc:${mc(i)}"><td>${esc(r[0])}</td><td><span>${esc(r[1])}</span></td></tr>`).join("");
+
+$("#mods").innerHTML = C.modulos.map((m, i) => `
+<details class="mod" id="${m.id}" style="--mc:${mc(i)}">
+  <summary><span class="num">${String(i+1).padStart(2,"0")}</span><h3>${esc(m.titulo)}</h3><span class="chev" aria-hidden="true">›</span>
+    <span class="bajada">${esc(m.bajada)}</span><span class="status" data-st="${m.id}"></span></summary>
+  <div class="body">
+    <div><div class="sec-h">Lo que tenés que saber</div>
+      <ul class="points">${m.puntos.map(p => `<li><strong>${esc(p.t)}</strong><p>${fmt(p.d)}</p></li>`).join("")}</ul></div>
+    <div><div class="sec-h">Pedidos para copiar</div>
+      <div class="prompts">${m.pedidos.map(p => `<div class="prompt"><code>${esc(p)}</code><button class="copy" type="button">Copiar</button></div>`).join("")}</div></div>
+    <div class="ex"><div class="sec-h" style="border:0;padding:0">Ejercicio</div><h4>${esc(m.ejercicio.t)}</h4>
+      <ol>${m.ejercicio.pasos.map(s => `<li>${fmt(s)}</li>`).join("")}</ol></div>
+    <div class="ojo"><b>⚠ Ojo:</b> ${fmt(m.ojo)}</div>
+    <div class="practice" data-pr="${m.id}">
+      <h4>Practicá conmigo</h4>
+      <p class="hint">Escribí un pedido para que te lo corrija, contame cómo te fue con el ejercicio o escribí tu duda. Se abre Claude con todo cargado.</p>
+      <textarea id="pr-${m.id}" placeholder="Escribí acá…"></textarea>
+      <div class="pbtns">
+        <button class="pbtn main" type="button" data-act="review" data-mod="${i}">Corregí mi pedido</button>
+        <button class="pbtn" type="button" data-act="report" data-mod="${i}">Así me fue con el ejercicio</button>
+        <button class="pbtn" type="button" data-act="ask" data-mod="${i}">Tengo una duda</button>
+      </div>
+      <div class="answer" hidden></div>
+      <p class="pnote" hidden></p>
+    </div>
+    <div><div class="sec-h">Chequeá que quedó claro</div>
+      <div class="quiz">${m.quiz.map((q, qi) => `<div class="q"><p>${esc(q.q)}</p><div class="opts">${q.o.map((o, oi) =>
+        `<button class="opt" type="button" data-m="${i}" data-q="${qi}" data-o="${oi}">${esc(o)}</button>`).join("")}</div><p class="fb" hidden></p></div>`).join("")}</div></div>
+    <button class="donebtn" type="button" data-done="${m.id}">Marcar módulo como terminado</button>
+  </div>
+</details>`).join("");
+
+$("#toc").innerHTML = C.modulos.map((m, i) => `<li><a style="--mc:${mc(i)}" href="#${m.id}" data-toc="${m.id}"><b>${String(i+1).padStart(2,"0")}</b>${esc(m.titulo.split(":")[0])}</a></li>`).join("");
+
+let render = function(){
+  const n = C.modulos.filter(m => done[m.id]).length;
+  $("#bar").innerHTML = C.modulos.map((m,i) => `<b class="${done[m.id]?"on":""}" style="--mc:${mc(i)}"></b>`).join("");
+  $("#ptxt").textContent = `${n} de ${C.modulos.length}`;
+  C.modulos.forEach(m => {
+    document.querySelector(`[data-toc="${m.id}"]`).classList.toggle("done", !!done[m.id]);
+    document.querySelector(`[data-st="${m.id}"]`).textContent = done[m.id] ? "Terminado" : "";
+    const b = document.querySelector(`[data-done="${m.id}"]`);
+    b.classList.toggle("is-done", !!done[m.id]);
+    b.textContent = done[m.id] ? "Terminado ✓ (tocá para desmarcar)" : "Marcar módulo como terminado";
+  });
+}
+render();
+
+document.addEventListener("click", e => {
+  const t = e.target;
+  if (t.matches(".copy")) {
+    const txt = t.previousElementSibling.textContent;
+    const ok = () => { t.textContent = "Copiado"; setTimeout(() => t.textContent = "Copiar", 1500); };
+    try { navigator.clipboard.writeText(txt).then(ok, () => selectText(t.previousElementSibling)); } catch(err) { selectText(t.previousElementSibling); }
+  } else if (t.matches(".opt")) {
+    const q = C.modulos[+t.dataset.m].quiz[+t.dataset.q];
+    const box = t.closest(".q");
+    box.querySelectorAll(".opt").forEach(b => b.classList.remove("right","wrong"));
+    const right = +t.dataset.o === q.a;
+    t.classList.add(right ? "right" : "wrong");
+    const fb = box.querySelector(".fb"); fb.hidden = false;
+    fb.textContent = (right ? "Bien. " : "No es esa. ") + q.x;
+  } else if (t.matches(".donebtn")) {
+    const id = t.dataset.done; done[id] = !done[id]; save(); render();
+  } else if (t.closest("[data-toc]")) {
+    const d = document.getElementById(t.closest("[data-toc]").dataset.toc); if (d) d.open = true;
+  }
+});
+
+
+// ---- práctica: abre Claude con la consigna lista (y la copia por las dudas)
+const ESTILO = "Respondeme en español argentino, directo y concreto, con **negrita** en lo clave. Máximo 170 palabras.";
+function promptFor(act, mi, txt){
+  const m = mi >= 0 ? C.modulos[mi] : null;
+  const ctx = m ? `Estoy en el módulo "${m.titulo}" (temas: ${m.puntos.map(p=>p.t).join(", ")}).` : `El curso tiene estos módulos: ${C.modulos.map(x=>x.titulo).join("; ")}.`;
+  const base = `Estoy haciendo el curso "Claude a Fondo" para aprender a usar Claude en mi negocio. Hacé de profe. ${ctx}\n\n`;
+  if (act === "review") return base + `Escribí este pedido para hacerte:\n«${txt}»\n\nEvaluálo: 1) qué está bien, 2) qué le falta (contexto, objetivo, formato, ejemplo, criterio de éxito), 3) una versión mejorada lista para copiar, aplicada a mi negocio. ${ESTILO}`;
+  if (act === "report") return base + `Ejercicio: "${m.ejercicio.t}" (pasos: ${m.ejercicio.pasos.join(" / ")}).\nAsí me fue:\n«${txt}»\n\nDame una devolución: qué logré, cómo destrabar lo que no salió y un próximo paso concreto. ${ESTILO}`;
+  return base + `Mi duda:\n«${txt}»\n\nRespondela. Si depende de mi plan o puede haber cambiado, decímelo. ${ESTILO}`;
+}
+function runPractice(btn){
+  const box = btn.closest(".practice"), ta = box.querySelector("textarea"), note = box.querySelector(".pnote");
+  const txt = ta.value.trim(); note.hidden = false;
+  if (!txt){ note.textContent = "Escribí algo primero en el recuadro."; ta.focus(); return; }
+  const p = promptFor(btn.dataset.act, +btn.dataset.mod, txt);
+  try { navigator.clipboard && navigator.clipboard.writeText(p).catch(()=>{}); } catch(e) {}
+  note.textContent = "Abrí Claude con tu consulta cargada. Si llega vacía, mantené apretado el cuadro de texto y elegí Pegar: ya la tenés copiada.";
+  window.open("https://claude.ai/new?q=" + encodeURIComponent(p), "_blank", "noopener");
+}
+document.addEventListener("click", e => { const b = e.target.closest(".pbtn[data-act]"); if (b) runPractice(b); });
+
+// ---- pasar avance entre equipos con un código
+const toCode = () => { let n = 0; C.modulos.forEach((m,i) => { if (done[m.id]) n |= (1<<i); }); return "CAF-" + n.toString(36).toUpperCase().padStart(2,"0"); };
+function fromCode(s){
+  const mt = String(s).trim().toUpperCase().match(/^CAF-([0-9A-Z]{1,3})$/); if (!mt) return null;
+  const n = parseInt(mt[1], 36); if (isNaN(n) || n >= (1 << C.modulos.length)) return null;
+  const r = {}; C.modulos.forEach((m,i) => { if (n & (1<<i)) r[m.id] = true; }); return r;
+}
+const sb = document.getElementById("syncbox");
+function showCode(){ document.getElementById("mycode").textContent = toCode(); }
+document.getElementById("syncopen").addEventListener("click", () => { sb.hidden = !sb.hidden; showCode(); });
+document.getElementById("copycode").addEventListener("click", e => {
+  const el = document.getElementById("mycode"), btn = e.currentTarget;
+  try { navigator.clipboard.writeText(el.textContent).then(() => { btn.textContent = "Copiado"; setTimeout(()=>btn.textContent="Copiar código",1500); }, () => selectText(el)); } catch(err){ selectText(el); }
+});
+document.getElementById("loadcode").addEventListener("click", () => {
+  const inp = document.getElementById("incode"), msg = document.getElementById("codemsg"), r = fromCode(inp.value);
+  if (!r){ msg.textContent = "Ese código no es válido. Tiene que empezar con CAF-, por ejemplo CAF-1F."; return; }
+  done = r; save(); render(); showCode(); inp.value = "";
+  msg.textContent = `Listo: cargué tu avance (${Object.keys(r).length} de ${C.modulos.length} módulos).`;
+});
+const _render = render; render = function(){ _render(); if (!sb.hidden) showCode(); };
+
+// ---- app instalable y sin conexión
+if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(()=>{}));
+function selectText(el){ const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+function openFromHash(){ const d = location.hash && document.getElementById(location.hash.slice(1)); if (d && d.tagName === "DETAILS") d.open = true; }
+window.addEventListener("hashchange", openFromHash); openFromHash();
+</script>
+
+</body>
+</html>
